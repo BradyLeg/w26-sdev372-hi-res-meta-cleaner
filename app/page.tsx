@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import { parseBlob } from 'music-metadata';
 
-interface AudioFile {
+type AudioFile = {
   id: number;
   title: string;
   artist: string;
@@ -11,25 +12,43 @@ interface AudioFile {
 }
 
 export default function HomePage() {
-  const [files, setFiles] = useState<File[]>([]);
   const [collection, setCollection] = useState<AudioFile[]>([]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const uploadedFiles = Array.from(e.target.files);
-      setFiles(uploadedFiles);
+  const handleFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (!e.target.files) return;
 
-      // For demo purposes, create placeholder metadata
-      const newCollection = uploadedFiles.map((file, index) => ({
-        id: index,
-        title: file.name,
-        artist: 'Unknown',
-        album: 'Unknown',
-        year: 'Unknown',
-      }));
-      setCollection(newCollection);
-    }
+    const files = Array.from(e.target.files);
+
+    const data = await Promise.all(
+      files.map(async (file, index) => {
+        try {
+          const metadata = await parseBlob(file);
+
+          return {
+            id: index,
+            title: metadata.common.title ?? file.name,
+            artist: metadata.common.artist ?? 'Unknown',
+            album: metadata.common.album ?? 'Unknown',
+            year: metadata.common.year?.toString() ?? 'Unknown',
+          };
+        } catch (err) {
+          console.error(err);
+          return {
+            id: index,
+            title: file.name,
+            artist: 'Unknown',
+            album: 'Unknown',
+            year: 'Unknown',
+          };
+        }
+      })
+    );
+
+    setCollection(data);
   };
+
 
   return (
     <div className="space-y-8">
