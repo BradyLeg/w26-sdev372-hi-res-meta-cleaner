@@ -1,6 +1,10 @@
 import { Router } from "express";
 import multer from "multer";
-import { updateMetadata, uploadAudio } from "../controllers/controllers.js";
+import {
+  createUser,
+  updateMetadata,
+  uploadAudio,
+} from "../controllers/controllers.js";
 
 // Initialize Express router
 const router = Router();
@@ -14,7 +18,7 @@ function fakeAuth(req, res, next) {
 }
 
 //routes
-
+router.post("/api/user", createUser);
 router.post("/api/upload", fakeAuth, upload.array("files"), uploadAudio);
 router.post("/api/update", updateMetadata);
 

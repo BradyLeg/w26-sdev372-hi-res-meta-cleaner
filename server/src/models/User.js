@@ -21,6 +21,16 @@ export const user = sequelize.define(
       allowNull: false,
     },
 
+    first_name: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+    },
+
+    last_name: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+    },
+
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,
