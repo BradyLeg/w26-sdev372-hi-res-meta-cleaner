@@ -2,7 +2,7 @@ import { DataTypes } from "sequelize";
 import sequelize from "../db/sequelize.js";
 
 export const audioFile = sequelize.define(
-  "AudioFile",
+  "audioFile",
   {
     file_id: {
       type: DataTypes.INTEGER,
@@ -16,6 +16,11 @@ export const audioFile = sequelize.define(
     },
 
     filename: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+    },
+
+    original_filename: {
       type: DataTypes.STRING(255),
       allowNull: false,
     },

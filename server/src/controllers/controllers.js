@@ -1,19 +1,16 @@
 import { audioFile } from "../models/audioFile.js";
 import { user } from "../models/user.js";
-import bcrypt from "bcrypt";
+import { hashPassword } from "../utils/hashPassword.js";
+import { upsertMetadata } from "../repos/repos.js";
+import archiver from "archiver";
+import fs from "fs";
+import path from "path";
 
 // controller function to create new user
-export async function createUser(req, res) {
+export async function createNewUser(req, res, next) {
   try {
     const { firstName, lastName, email, password } = req.body;
-
-    if (!firstName || !lastName || !email || !password) {
-      return res.status(400).json({
-        error: "first name, last name, email, and password are required",
-      });
-    }
-
-    const password_hash = await bcrypt.hash(password, 10);
+    const password_hash = await hashPassword(password);
 
     const newUser = await user.create({
       first_name: firstName,
@@ -29,54 +26,98 @@ export async function createUser(req, res) {
       last_name: newUser.last_name,
     });
   } catch (err) {
-    if (err.name === "SequelizeUniqueConstraintError") {
-      return res.status(409).json({ error: "Email already exists" });
-    }
-
-    console.error(err);
-    return res.status(500).json({ error: "Failed to create user" });
+    next(err);
   }
 }
 
 // controller function to upload audio files
-export async function uploadAudio(req, res) {
+export async function uploadAudio(req, res, next) {
   try {
     const userId = req.user.user_id;
     const files = req.files;
 
-    if (!files || files.length === 0) {
-      return res.status(400).json({ error: "No files uploaded" });
-    }
+    const uploaded = await Promise.all(
+      files.map(async (file) => {
+        const audio = await audioFile.create({
+          user_id: userId,
+          filename: file.filename,
+          original_filename: file.originalname,
+        });
 
-    const uploaded = [];
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-
-      const audio = await audioFile.create({
-        user_id: userId,
-        filename: file.filename,
-      });
-
-      uploaded.push({
-        file_id: audio.file_id,
-        filename: audio.filename,
-      });
-    }
+        return {
+          file_id: audio.file_id,
+          filename: audio.filename,
+          original_filename: audio.original_filename,
+        };
+      })
+    );
 
     res.status(201).json(uploaded);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Upload failed" });
+    next(err);
   }
 }
 
 // controller function to update db with audio file metadata
-export const updateMetadata = async (req, res) => {
+export const updateMetadata = async (req, res, next) => {
   try {
-    const result = await updateDatabase(req.body);
-    res.status(200).json(result);
+    await upsertMetadata(req.body);
+    res.status(200).json({ message: "Metadata updated successfully" });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    next(err);
   }
 };
+
+// controller function to download all audio files for a user
+export async function downloadAudio(req, res, next) {
+  try {
+    const userId = req.user.user_id;
+
+    // Get all audio files for the user
+    const userFiles = await audioFile.findAll({
+      where: { user_id: userId },
+    });
+
+    if (!userFiles || userFiles.length === 0) {
+      return res.status(404).json({ error: "No audio files found" });
+    }
+
+    // Set response headers for ZIP download
+    res.setHeader("Content-Type", "application/zip");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="audio-files-${userId}-${Date.now()}.zip"`
+    );
+
+    // Create archiver instance
+    const archive = archiver("zip", {
+      zlib: { level: 9 }, // Maximum compression
+    });
+
+    // Handle archiver errors
+    archive.on("error", (err) => {
+      next(err);
+    });
+
+    // Pipe archive to response
+    archive.pipe(res);
+
+    // Add each file to the archive
+    for (const file of userFiles) {
+      const filePath = path.join("uploads", file.filename);
+
+      // Check if file exists before adding
+      if (fs.existsSync(filePath)) {
+        // Use original filename in the ZIP archive
+        archive.file(filePath, { name: file.original_filename });
+      } else {
+        console.warn(`File not found: ${filePath}`);
+      }
+    }
+
+    // Finalize the archive
+    await archive.finalize();
+  } catch (err) {
+    next(err);
+  }
+}

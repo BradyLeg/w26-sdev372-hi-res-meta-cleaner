@@ -1,26 +1,36 @@
 import { Router } from "express";
 import multer from "multer";
-import {
-  createUser,
-  updateMetadata,
-  uploadAudio,
-} from "../controllers/controllers.js";
+import path from "path";
+import { createNewUser, updateMetadata, uploadAudio, downloadAudio } from "../controllers/controllers.js";
+import authenticateUser from "../middleware/authenticateUser.js";
+import validateLogin from "../middleware/validateLogin.js";
+import { validateCreateUser, validateMetadata } from "../middleware/validateRequest.js";
+import { validateFiles } from "../middleware/validateFiles.js";
 
 // Initialize Express router
 const router = Router();
 
-const upload = multer({ dest: "uploads/" });
+// Configure multer storage to preserve file extensions
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    // Generate unique filename with original extension
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname);
+    cb(null, file.fieldname + "-" + uniqueSuffix + ext);
+  },
+});
 
-// fake user id for testing
-function fakeAuth(req, res, next) {
-  req.user = { user_id: 1 };
-  next();
-}
+const upload = multer({ storage: storage });
 
-//routes
-router.post("/api/user", createUser);
-router.post("/api/upload", fakeAuth, upload.array("files"), uploadAudio);
-router.post("/api/update", updateMetadata);
+// Routes
+router.post("/api/user", validateCreateUser, createNewUser);
+router.post("/api/login", validateLogin);
+router.post("/api/upload", authenticateUser, upload.array("files"), validateFiles, uploadAudio);
+router.post("/api/download", authenticateUser, downloadAudio);
+router.post("/api/update", validateMetadata, updateMetadata);
 
 // Export the configured router for use in the main application
 export default router;

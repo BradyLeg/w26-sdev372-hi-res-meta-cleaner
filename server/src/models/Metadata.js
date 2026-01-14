@@ -1,9 +1,8 @@
-// models/Metadata.js
 import { DataTypes } from "sequelize";
 import sequelize from "../db/sequelize.js";
 
 export const metadata = sequelize.define(
-  "Metadata",
+  "metadata",
   {
     metadata_id: {
       type: DataTypes.INTEGER,
