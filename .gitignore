@@ -22,3 +22,14 @@ Thumbs.db
 *.swp
 
 *.local.json
+
+# Audio files
+*.mp3
+*.mp4
+*.m4a
+*.wav
+*.flac
+*.wma
+*.aac
+*.alac
+*.aiff
