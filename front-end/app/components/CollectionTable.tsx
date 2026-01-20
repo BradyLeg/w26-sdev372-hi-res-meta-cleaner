@@ -95,12 +95,6 @@ export default function CollectionTable({
         artist: updatedFiles[index].artist ?? '',
         album: updatedFiles[index].album ?? '',
         year: updatedFiles[index].year ?? '',
-        comment: updatedFiles[index].comment ?? '',
-        track: updatedFiles[index].track ?? '',
-        genre: updatedFiles[index].genre ?? '',
-        album_artist: updatedFiles[index].album_artist ?? '',
-        composer: updatedFiles[index].composer ?? '',
-        discnumber: updatedFiles[index].discnumber ?? '',
         type: file.type,
         size: file.size,
     };
