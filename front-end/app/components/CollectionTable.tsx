@@ -39,24 +39,28 @@ export default function CollectionTable({ collection, onRemove }: Props) {
 
     // Build metadata payload
     const metadata = {
-      filefilenames: file.filename,
-      title: updatedFiles[index].title ?? '',
-      artist: updatedFiles[index].artist ?? '',
-      album: updatedFiles[index].album ?? '',
-      year: updatedFiles[index].year ?? '',
+        file_id: file.id,
+        title: updatedFiles[index].title ?? '',
+        artist: updatedFiles[index].artist ?? '',
+        album: updatedFiles[index].album ?? '',
+        year: updatedFiles[index].year ?? '',
+        comment: updatedFiles[index].comment ?? '',
+        track: updatedFiles[index].track ?? '',
+        genre: updatedFiles[index].genre ?? '',
+        album_artist: updatedFiles[index].album_artist ?? '',
+        composer: updatedFiles[index].composer ?? '',
+        discnumber: updatedFiles[index].discnumber ?? '',
+        type: file.type,
+        size: file.size,
     };
 
     try {
-      const res = await fetch('/api/update', {
+      const res = await fetch('http://localhost:3001/api/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(metadata),
       });
       console.log(metadata);
-
-      if (!res.ok) {
-        console.error('Failed to update metadata:', await res.text());
-      }
     } catch (error) {
       console.error('Failed to update metadata:', error);
     }
