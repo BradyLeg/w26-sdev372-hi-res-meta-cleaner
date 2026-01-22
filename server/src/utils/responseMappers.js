@@ -3,20 +3,7 @@
  * Centralizes the transformation of database models to API response formats.
  */
 
-const METADATA_FIELDS = [
-  "title",
-  "artist",
-  "album",
-  "year",
-  "comment",
-  "track",
-  "genre",
-  "type",
-  "size",
-  "album_artist",
-  "composer",
-  "discnumber",
-];
+import { METADATA_FIELDS } from "./metadataFields.js";
 
 /**
  * Maps a metadata database record to API response format.
