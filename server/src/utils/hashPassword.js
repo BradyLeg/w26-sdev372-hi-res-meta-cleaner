@@ -1,6 +1,12 @@
 import bcrypt from "bcrypt";
 
-// Utility function to hash passwords
-export const hashPassword = async (password) => {
-  return await bcrypt.hash(password, 10);
-};
+const SALT = 10;
+
+/**
+ * Hashes a plaintext password using bcrypt.
+ * @param {string} password - Plaintext password to hash
+ * @returns {Promise<string>} Hashed password
+ */
+export async function hashPassword(password) {
+  return bcrypt.hash(password, SALT);
+}
