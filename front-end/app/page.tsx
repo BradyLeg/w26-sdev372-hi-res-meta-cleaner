@@ -47,9 +47,13 @@ export default function HomePage() {
   };
 
   const handleFilesSelected = async (selectedFiles: File[]) => {
+
     setFiles(selectedFiles);
+
     const metadata = await extractMetadata(selectedFiles);
+
     setCollection(metadata);
+
   };
 
   const handleUpload = async () => {
