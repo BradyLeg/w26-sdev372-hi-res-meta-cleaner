@@ -49,7 +49,7 @@ export async function createAudioRecords(req, res, next) {
     const uploaded = [];
 
     for (const file of files) {
-      // 🔍 Check if file already exists for this user
+
       const existing = await audioFile.findOne({
         where: {
           user_id: userId,
