@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "test:e2e": "start-server-and-test dev http://localhost:3000 cy:run"
   },
   "dependencies": {
     "music-metadata": "^11.10.5",
@@ -27,6 +30,7 @@
     "cypress": "^15.11.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
+    "start-server-and-test": "^2.1.5",
     "tailwindcss": "^4",
     "typescript": "^5",
     "webpack": "^5.104.1",
